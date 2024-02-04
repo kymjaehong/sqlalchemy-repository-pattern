@@ -1,4 +1,5 @@
 """ user_repository_impl.py """
+
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, func
@@ -15,10 +16,10 @@ class UserRepository(Repository[UserEntity]):
     async def find_by_id(self, id: int) -> Optional[UserEntity]:
         return await self.__db.execute(
             select(UserEntity).where(UserEntity.id == id)
-        ).scalar_one()
+        ).scalar_one_or_none()
 
     async def find_all(self) -> list[UserEntity]:
-        return await self.__db.scalars(select(UserEntity)).all()
+        return await self.__db.execute(select(UserEntity)).scalars().all()
 
     async def save(self, t: UserEntity) -> int:
         async with self.__db as session:
@@ -34,7 +35,7 @@ class UserRepository(Repository[UserEntity]):
             Exception("Fail to delete.")
 
     async def count(self) -> int:
-        return self.__db.scalar(select(func.count()).select_from(UserEntity))
+        return self.__db.execute(select(func.count()).select_from(UserEntity)).scalar()
 
     async def exists_by_id(self, id: int) -> bool:
         return self.__db.execute(

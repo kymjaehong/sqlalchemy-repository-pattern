@@ -1,4 +1,5 @@
 """ plate_repository_impl.py """
+
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, func
@@ -15,10 +16,10 @@ class PlateRepository(Repository[PlateEntity]):
     async def find_by_id(self, id: int) -> Optional[PlateEntity]:
         return await self.__db.execute(
             select(PlateEntity).where(PlateEntity.id == id)
-        ).scalar_one()
+        ).scalar_one_or_none()
 
     async def find_all(self) -> list[PlateEntity]:
-        return await self.__db.scalars(select(PlateEntity)).all()
+        return await self.__db.execute(select(PlateEntity)).scalars().all()
 
     async def save(self, t: PlateEntity) -> int:
         async with self.__db as session:
@@ -34,7 +35,7 @@ class PlateRepository(Repository[PlateEntity]):
             Exception("Fail to delete.")
 
     async def count(self) -> int:
-        return self.__db.scalar(select(func.count()).select_from(PlateEntity))
+        return self.__db.execute(select(func.count()).select_from(PlateEntity)).scalar()
 
     async def exists_by_id(self, id: int) -> bool:
         return await self.__db.execute(
